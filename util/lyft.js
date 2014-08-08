@@ -15,13 +15,17 @@ module.exports = {
     .type('json')
     .send(json)
     .end(function (response) {
-      callback("lyft", response.body ? 
-        {
-          "id" : response.body["user"]["id"],
-          "name" : response.body["user"]["firstName"]+" "+response.body["user"]["lastName"],
-          "lyftToken" : response.body["user"]["lyftToken"]
-        }
-        : {})
+      try {
+        callback("lyft",
+          {
+            "id" : response.body["user"]["id"],
+            "name" : response.body["user"]["firstName"]+" "+response.body["user"]["lastName"],
+            "token" : response.body["user"]["lyftToken"]
+          });
+      } catch (err) {
+        callback("lyft", {});
+        console.error(err)
+      }
     });
   },
 
@@ -40,7 +44,7 @@ module.exports = {
     .end(function (response) {
       try {
         callback("lyft", response.body)
-      } catch(err) {
+      } catch (err) {
         callback("lyft", {})
         console.error(err)
       } 

@@ -2,8 +2,26 @@
 var UBER_ENDPOINT = "https://cn-dc1.uber.com"
 
 var unirest = require('unirest');
+var crypto = require('crypto');
 
 module.exports = {
+  login : function(email, password, location, callback) {
+    var json = {
+      "password" : hashPassword(password),
+      "email" : email
+    };
+
+    sendMessage('Login', email, location, json, function(response) {
+      try {
+        var token = response.body['token'];
+        callback("uber", {'token' : token});
+      } catch (err) {
+        callback("uber", {});
+        console.error(err);
+      }
+    });
+  },
+
   pickup: function() {
     
   },
@@ -62,3 +80,37 @@ module.exports = {
     });
   }
 };
+
+function hashPassword(password) {
+  var pw = password.toString("utf8")
+  var buffer = '';
+  for (var i = 0, len = pw.length; i < len; i++) {
+
+    buffer += crypto.createHash('md5').update(pw[i]).digest('hex');
+  }
+  return crypto.createHash('md5').update(buffer.toLowerCase()).digest('hex').toLowerCase();
+}
+
+function sendMessage(messageType, email, location, params, callback) {
+  var json = {
+      'messageType' : messageType,
+      'epoch' : (new Date).getTime(),
+      'version' : "2.33.0",
+      'language' : 'en',
+      'app' : 'client',
+      'email' : email,
+      'latitude' : location['lat'],
+      'longitude' : location['lon']
+  }
+
+  for(var key in params) {
+    json[key] = params[key];
+  }
+
+  unirest.post(UBER_ENDPOINT)
+    .type('json')
+    .send(json)
+    .end(function (response) {
+      callback(response);
+    });
+}

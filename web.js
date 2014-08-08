@@ -3,7 +3,7 @@ var express = require("express");
 var app = express();
 var bodyParser = require('body-parser');
 
-// var uber = require('./util/uber.js');
+var uber = require('./util/uber.js');
 var lyft = require('./util/lyft.js');
 var sidecar = require('./util/sidecar.js');
 var summon = require('./util/summon.js');
@@ -19,11 +19,27 @@ app.get('/', function(req, res) {
   res.render('index.html');
 });
 
-// facebook_token
+// facebook_token, uber_email, uber_password
 app.post('/login', function(req, res) {
-  lyft.login(req.body.facebook_token, function(which, data) {
-    res.send({"lyft" : data});
-  });
+  var result = {};
+  var returned = {}
+
+  function callback(which, data) {
+    result[which] = data;
+    returned[which] = true;
+
+    if(returned["lyft"] && returned["uber"]) {
+      res.send(result)
+    }
+  }
+
+  var location = {
+    lat : parseFloat(req.body.lat),
+    lon : parseFloat(req.body.lon)
+  }
+
+  lyft.login(req.body.facebook_token, callback);
+  uber.login(req.body.uber_email, req.body.uber_password, location, callback);
 });
 
 // lat, lon, lyft_token
