@@ -1,0 +1,18 @@
+{
+  "name": "oneride",
+  "version": "0.0.0",
+  "description": "Ridesharing made easy",
+  "main": "web.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "cv cy jz",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.4.3",
+    "ejs": "^1.0.0",
+    "express": "^4.6.1",
+    "request": "^2.39.0",
+    "unirest": "^0.2.7"
+  }
+}
