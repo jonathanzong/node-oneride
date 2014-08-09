@@ -1,11 +1,11 @@
 // uber.js
-var UBER_ENDPOINT = "https://cn-dc1.uber.com"
+var UBER_ENDPOINT = "https://cn-dc1.uber.com";
 
 var unirest = require('unirest');
 var crypto = require('crypto');
 
 module.exports = {
-  login : function(email, password, location, callback) {
+  login : function (email, password, location, callback) {
     if (!(email && password && location)) {
       callback("uber", {'err' : 'Missing parameters'});
       return;
@@ -14,12 +14,12 @@ module.exports = {
       "password" : hashPassword(password),
       "email" : email
     };
-    sendMessage('Login', location, json, function(response) {
+    sendMessage('Login', location, json, function (response) {
       try {
         if (response.status === 403) {
           callback("uber", {'err' : 'Uber returned 403'});
         } else {
-          var token = response.body['token'];
+          var token = response.body.token;
           callback("uber", {'token' : token});
         }
       } catch (err) {
@@ -29,31 +29,31 @@ module.exports = {
     });
   },
 
-  pickup: function() {
+  pickup: function () {
     
   },
 
-  cancel: function() {
+  cancel: function () {
 
   },
 
-  ping: function(token, location, callback) {
+  ping: function (token, location, callback) {
     if (!(token && location)) {
       callback("uber", {'err' : 'Missing parameters'});
       return;
     }
     var json = {
       'token' : token
-    }
-    sendMessage('PingClient', location, json, function(response) {
+    };
+    sendMessage('PingClient', location, json, function (response) {
       try {
         if (response.status === 403) {
           callback("uber", {'err' : 'Uber returned 403'});
         } else {
-          var nearbyVehicles = response.body['nearbyVehicles'];
+          var nearbyVehicles = response.body.nearbyVehicles;
           var drivers = [];
           var id = 0;
-          for (vehicle in nearbyVehicles) {
+          for (var vehicle in nearbyVehicles) {
             var paths = nearbyVehicles[vehicle]["vehiclePaths"];
             var pathEntryArray = paths[Object.keys(paths).pop()];
             var lastPathEntry = pathEntryArray[pathEntryArray.length-1];
@@ -88,19 +88,19 @@ function hashPassword(password) {
 
 function sendMessage(messageType, location, params, callback) {
   var json = {
-      'messageType' : messageType,
-      'epoch' : (new Date).getTime(),
-      'version' : '2.8.17',
-      'language' : 'en',
-      'app' : 'client',
-      'latitude' : location['lat'],
-      'longitude' : location['lng'],
-      'deviceModel': 'iPhone6,1',
-      'deviceOS': '7.0.3',
-      'device': 'iphone'
-  }
+    'messageType' : messageType,
+    'epoch' : (new Date()).getTime(),
+    'version' : '2.8.17',
+    'language' : 'en',
+    'app' : 'client',
+    'latitude' : location.lat,
+    'longitude' : location.lng,
+    'deviceModel': 'iPhone6,1',
+    'deviceOS': '7.0.3',
+    'device': 'iphone'
+  };
 
-  for(var key in params) {
+  for (var key in params) {
     json[key] = params[key];
   }
 
