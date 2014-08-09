@@ -6,15 +6,15 @@ var SIDECAR_BASE_URL = 'https://app.side.cr';
 
 module.exports = {
   login : function (facebook_token, callback) {
-    
+    // TODO
   },
 
   pickup: function (lyft_token, location, callback) {
-    
+    // TODO
   },
 
   cancel: function (lyft_token, ride_id, location, callback) {
- 
+    // TODO
   },
 
   ping: function (user_id, password, location, destination, callback) {

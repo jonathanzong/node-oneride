@@ -5,10 +5,6 @@ var unirest = require('unirest');
 var SUMMON_BASE_URL = 'https://www.instantcab.com';
 
 module.exports = {
-  login : function (facebook_token, callback) {
-    
-  },
-
   pickup: function (email, password, location, callback) {
     if (!(email && password && location)) {
       callback('summon', {'err' : 'Missing parameters'});

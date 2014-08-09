@@ -30,11 +30,11 @@ module.exports = {
   },
 
   pickup: function () {
-    
+    // TODO
   },
 
   cancel: function () {
-
+    // TODO
   },
 
   ping: function (token, location, callback) {
