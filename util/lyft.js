@@ -4,6 +4,10 @@ var unirest = require('unirest');
 
 module.exports = {
   login : function(facebook_token, callback) {
+    if (!facebook_token) {
+        callback("lyft", {'err' : 'Missing parameters'});
+        return;
+    }
     var json = {
       "fbToken" : facebook_token
     };
@@ -23,16 +27,20 @@ module.exports = {
             "token" : response.body["user"]["lyftToken"]
           });
       } catch (err) {
-        callback("lyft", {});
-        console.error(err)
+        callback("lyft", {'err' : err});
+        console.error(err);
       }
     });
   },
 
   pickup: function(lyft_token, location, callback) {
+    if (!(lyft_token && location)) {
+        callback("lyft", {'err' : 'Missing parameters'});
+        return;
+    }
     var json = {
         "startLat" : location["lat"],
-        "startLng" : location["lon"]
+        "startLng" : location["lng"]
     };
 
     unirest.post("https://api.lyft.com/rides")
@@ -45,17 +53,21 @@ module.exports = {
       try {
         callback("lyft", response.body)
       } catch (err) {
-        callback("lyft", {})
-        console.error(err)
+        callback("lyft", {'err' : err});
+        console.error(err);
       } 
     });
   },
 
   cancel: function(lyft_token, ride_id, location, callback) {
+    if (!(lyft_token && ride_id && location)) {
+        callback("lyft", {'err' : 'Missing parameters'});
+        return;
+    }
     var json = {
         "status" : "canceled",
         "lat" : location["lat"],
-        "lng" : location["lon"]
+        "lng" : location["lng"]
     };
 
     unirest.put("https://api.lyft.com/rides/"+ride_id)
@@ -69,18 +81,22 @@ module.exports = {
         console.log(response.body)
         callback("lyft", response.body)
       } catch(err) {
-        callback("lyft", {})
-        console.error(err)
+        callback("lyft", {'err' : err});
+        console.error(err);
       }      
     });
   },
 
-  ping: function(userid, lyft_token, location, callback) {
+  ping: function(user_id, lyft_token, location, callback) {
+    if (!(user_id && lyft_token && location)) {
+        callback("lyft", {'err' : 'Missing parameters'});
+        return;
+    }
     var json = {
       "rideType" : "standard",
       "marker" : {
         "lat" : location["lat"],
-        "lng" : location["lon"]
+        "lng" : location["lng"]
       },
       // "appInfoRevision" : "9cf7885088b367969624d8eb06717e3d"
       "locations": [{
@@ -89,13 +105,13 @@ module.exports = {
         "fg": true,
         "speed": 0,
         "lat": location["lat"],
-        "lng": location["lon"],
+        "lng": location["lng"],
         "bearing": -1,
         "accuracy": 5
       }]
     };
 
-    unirest.put("https://api.lyft.com/users/"+userid+"/location")
+    unirest.put("https://api.lyft.com/users/"+user_id+"/location")
     .headers({
         "Authorization" : "lyftToken " + lyft_token,
         "User-Agent" : "lyft:iOS:7.1.2:2.2.4.189",
@@ -137,8 +153,8 @@ module.exports = {
           callback("lyft", drivers)
         }
       } catch(err) {
-        callback("lyft", {})
-        console.error(err)
+        callback("lyft", {'err' : err});
+        console.error(err);
       }
     });
   }

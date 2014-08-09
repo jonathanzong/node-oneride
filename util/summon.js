@@ -10,6 +10,10 @@ module.exports = {
   },
 
   pickup: function(email, password, location, callback) {
+    if (!(email && password && location)) {
+      callback("summon", {'err' : 'Missing parameters'});
+      return;
+    }
     unirest.post(SUMMON_BASE_URL+"/request/add")
     .headers({
         "Host" : "www.instantcab.com",
@@ -17,7 +21,7 @@ module.exports = {
         "Connection" : "Keep-Alive"
       })
     .send("from_lat="+location["lat"])
-    .send("from_lng="+location["lon"])
+    .send("from_lng="+location["lng"])
     .send("username="+encodeURIComponent(email))
     .send("password="+encodeURIComponent(password))
     .send("driver_type=3")
@@ -25,13 +29,17 @@ module.exports = {
       try {
         callback("summon", response.body)
       } catch(err) {
-        callback("summon", {})  
-        console.error(err)
+        callback("summon", {'err' : err});  
+        console.error(err);
       }
     });
   },
 
   cancel: function(email, password, ride_id, callback) {
+    if (!(email && password && ride_id)) {
+      callback("summon", {'err' : 'Missing parameters'});
+      return;
+    }
     unirest.post(SUMMON_BASE_URL+"/request/user_cancel")
     .headers({
         "Host" : "www.instantcab.com",
@@ -43,15 +51,19 @@ module.exports = {
     .send("id="+ride_id)
     .end(function (response) {
       try {
-        callback("summon", response.body)
+        callback("summon", response.body);
       } catch(err) {
-        callback("summon", {})  
-        console.error(err)
+        callback("summon", {'err' : err});
+        console.error(err);
       }
     });
   },
 
   ping: function(location, email, password, ride_id, callback) {
+    if (!location) {
+      callback("summon", {'err' : 'Missing parameters'});
+      return;
+    }
     if (email && password && ride_id) {
       unirest.get(SUMMON_BASE_URL+"/api/v1/trips/"+ride_id)
       .headers({
@@ -70,8 +82,8 @@ module.exports = {
             "accepted" : response.body["accepted_at"] ? true : false
           })
         } catch(err) {
-          callback("summon", {})  
-          console.error(err)
+          callback("summon", {'err' : err});  
+          console.error(err);
         }
       });
     }
@@ -83,7 +95,7 @@ module.exports = {
           "Connection" : "Keep-Alive"
         })
       .send("lat="+location["lat"])
-      .send("lng="+location["lon"])
+      .send("lng="+location["lng"])
       .send("with_eta=1")
       .send("with_traffic=1")
       .send("driver_type=3")
@@ -94,18 +106,19 @@ module.exports = {
           var rides = response.body["service_pro_details"]
           for (var x=0;x<rides.length;x++) {
             rides[x]["which"] = "summon"
+            rides[x]["eta"] = rides[x]["eta"].toString()
+            rides[x]["id"] = rides[x]["id"].toString()
+            rides[x]["name"] = rides[x]["providerName"]
             delete rides[x]["time_taken"]
             delete rides[x]["driver_type"]
             delete rides[x]["include_eta"]
             delete rides[x]["distance"]
-            rides[x]["eta"] = rides[x]["eta"].toString()
-            rides[x]["id"] = rides[x]["id"].toString()
-            rides[x]["name"] = rides[x]["providerName"]
+            delete rides[x]["providerName"]
           }
           callback("summon", rides)
         } catch(err) {
-          callback("summon", {})  
-          console.error(err)
+          callback("summon", {'err' : err}); 
+          console.error(err);
         }
       });
     }    

@@ -6,17 +6,24 @@ var crypto = require('crypto');
 
 module.exports = {
   login : function(email, password, location, callback) {
+    if (!(email && password && location)) {
+      callback("uber", {'err' : 'Missing parameters'});
+      return;
+    }
     var json = {
       "password" : hashPassword(password),
       "email" : email
     };
-
-    sendMessage('Login', email, location, json, function(response) {
+    sendMessage('Login', location, json, function(response) {
       try {
-        var token = response.body['token'];
-        callback("uber", {'token' : token});
+        if (response.status === 403) {
+          callback("uber", {'err' : 'Uber returned 403'});
+        } else {
+          var token = response.body['token'];
+          callback("uber", {'token' : token});
+        }
       } catch (err) {
-        callback("uber", {});
+        callback("uber", {'err' : err});
         console.error(err);
       }
     });
@@ -31,52 +38,41 @@ module.exports = {
   },
 
   ping: function(token, location, callback) {
+    if (!(token && location)) {
+      callback("uber", {'err' : 'Missing parameters'});
+      return;
+    }
     var json = {
-      "deviceOS": "7.1",
-      "localeFileMD5": "4C2A9B8673EC29F09A27A880486EEEA9",
-      "version": "2.33.0",
-      "deviceId": "02:00:00:00:00:00",
-      "deviceIds": {
-        "advertiserId": "E531FE40-9FEE-4242-8335-1B19B0F7EDC1",
-        "uberId": "7CC26326-250A-4113-AF04-A5748AA93CD1",
-        "bluetoothMac": "02:00:00:00:00:00"
-      },
-      "deviceModel": "iPod5,1",
-      "messageType" : "PingClient",
-      "device" : "iphone",
-      "epoch" : "1407014301556",
-      "language" : "en",
-      "altitude" : 0,
-      "app" : "client",
-      "token" : token,
-      "longitude" : location["lon"],
-      "latitude" : location["lat"]
-    };
-
-    unirest.post(UBER_ENDPOINT)
-    .headers({
-        "X-Uber-Token" : token,
-        "Host" : "cn-dc1.uber.com:443",
-        "Proxy-Connection" : "keep-alive",
-        "Accept" : "*/*",
-        "Accept-Encoding" : "gzip, deflate",
-        "Accept-Language" : "en;q=1, fr;q=0.9, de;q=0.8, zh-Hans;q=0.7, zh-Hant;q=0.6, ja;q=0.5",
-        "Content-Type" : "application/json; charset=utf-8",
-        "Connection" : "keep-alive"
-      })
-    .type('json')
-    .send(json)
-    .end(function (response) {
-      console.log("uber body: "+response.body);
-      var nearby = response.body["nearbyVehicles"]
-      console.log("nearby : "+(nearby))
-      console.log(JSON.stringify(nearby))
-      for (x in nearby) {
-        if (x["vehiclePaths"]) {
-          delete x["vehiclePaths"];
+      'token' : token
+    }
+    sendMessage('PingClient', location, json, function(response) {
+      try {
+        if (response.status === 403) {
+          callback("uber", {'err' : 'Uber returned 403'});
+        } else {
+          var nearbyVehicles = response.body['nearbyVehicles'];
+          var drivers = [];
+          var id = 0;
+          for (vehicle in nearbyVehicles) {
+            var paths = nearbyVehicles[vehicle]["vehiclePaths"];
+            var pathEntryArray = paths[Object.keys(paths).pop()];
+            var lastPathEntry = pathEntryArray[pathEntryArray.length-1];
+            var ride = {
+              "id" : (id++).toString(),
+              "eta" : nearbyVehicles[vehicle]["minEta"].toString(),
+              "lat" : lastPathEntry["latitude"].toString(),
+              "lng" : lastPathEntry["longitude"].toString(),
+              "name" : "Uber Driver",
+              "which" : "uber"
+            }
+            drivers.push(ride);
+          }
         }
+        callback("uber", drivers);
+      } catch (err) {
+        callback("uber", {'err' : err});
+        console.error(err);
       }
-      callback("uber", response.body ? response.body["nearbyVehicles"] : {})
     });
   }
 };
@@ -85,22 +81,23 @@ function hashPassword(password) {
   var pw = password.toString("utf8")
   var buffer = '';
   for (var i = 0, len = pw.length; i < len; i++) {
-
     buffer += crypto.createHash('md5').update(pw[i]).digest('hex');
   }
   return crypto.createHash('md5').update(buffer.toLowerCase()).digest('hex').toLowerCase();
 }
 
-function sendMessage(messageType, email, location, params, callback) {
+function sendMessage(messageType, location, params, callback) {
   var json = {
       'messageType' : messageType,
       'epoch' : (new Date).getTime(),
-      'version' : "2.33.0",
+      'version' : '2.8.17',
       'language' : 'en',
       'app' : 'client',
-      'email' : email,
       'latitude' : location['lat'],
-      'longitude' : location['lon']
+      'longitude' : location['lng'],
+      'deviceModel': 'iPhone6,1',
+      'deviceOS': '7.0.3',
+      'device': 'iphone'
   }
 
   for(var key in params) {
@@ -108,6 +105,10 @@ function sendMessage(messageType, email, location, params, callback) {
   }
 
   unirest.post(UBER_ENDPOINT)
+    .headers({
+      'Accept-Language': 'en-US',
+      'User-Agent': 'client/iphone/2.8.17'
+    })
     .type('json')
     .send(json)
     .end(function (response) {
