@@ -1,5 +1,5 @@
 // web.js
-var express = require("express");
+var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 
@@ -50,11 +50,11 @@ app.post('/pickup/:which', function (req, res) {
     lat : parseFloat(req.body.lat),
     lng : parseFloat(req.body.lng)
   };
-  if (which === "lyft") {
+  if (which === 'lyft') {
     lyft.pickup(req.body.lyft_token, location, function (which, data) {
       res.send(data);
     });
-  } else if (which === "summon") {
+  } else if (which === 'summon') {
     summon.pickup(req.body.summon_email, req.body.summon_password, location, function (which, data) {
       res.send(data);
     });
@@ -69,11 +69,11 @@ app.post('/cancel/:which', function (req, res) {
     lat : parseFloat(req.body.lat),
     lng : parseFloat(req.body.lng)
   };
-  if (which === "lyft") {
+  if (which === 'lyft') {
     lyft.cancel(req.body.lyft_token, req.body.ride_id, location, function (which, data) {
       res.send(data);
     });
-  } else if (which === "summon") {
+  } else if (which === 'summon') {
     summon.cancel(req.body.summon_email, req.body.summon_password, req.body.ride_id, function (which, data) {
       res.send(data);
     });
@@ -103,7 +103,7 @@ app.post('/ping', function (req, res) {
   var uber_token = req.body.uber_token;
 
   var result = {
-    "rides" : []
+    'rides' : []
   };
   var returned = {};
 
@@ -131,5 +131,5 @@ app.post('/ping', function (req, res) {
 
 var port = Number(process.env.PORT || 5000);
 app.listen(port, function () {
-  console.log("Listening on " + port);
+  console.log('Listening on ' + port);
 });

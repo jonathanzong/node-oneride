@@ -1,5 +1,5 @@
 // uber.js
-var UBER_ENDPOINT = "https://cn-dc1.uber.com";
+var UBER_ENDPOINT = 'https://cn-dc1.uber.com';
 
 var unirest = require('unirest');
 var crypto = require('crypto');
@@ -7,23 +7,23 @@ var crypto = require('crypto');
 module.exports = {
   login : function (email, password, location, callback) {
     if (!(email && password && location)) {
-      callback("uber", {'err' : 'Missing parameters'});
+      callback('uber', {'err' : 'Missing parameters'});
       return;
     }
     var json = {
-      "password" : hashPassword(password),
-      "email" : email
+      'password' : hashPassword(password),
+      'email' : email
     };
     sendMessage('Login', location, json, function (response) {
       try {
         if (response.status === 403) {
-          callback("uber", {'err' : 'Uber returned 403'});
+          callback('uber', {'err' : 'Uber returned 403'});
         } else {
           var token = response.body.token;
-          callback("uber", {'token' : token});
+          callback('uber', {'token' : token});
         }
       } catch (err) {
-        callback("uber", {'err' : err});
+        callback('uber', {'err' : err});
         console.error(err);
       }
     });
@@ -39,7 +39,7 @@ module.exports = {
 
   ping: function (token, location, callback) {
     if (!(token && location)) {
-      callback("uber", {'err' : 'Missing parameters'});
+      callback('uber', {'err' : 'Missing parameters'});
       return;
     }
     var json = {
@@ -48,29 +48,29 @@ module.exports = {
     sendMessage('PingClient', location, json, function (response) {
       try {
         if (response.status === 403) {
-          callback("uber", {'err' : 'Uber returned 403'});
+          callback('uber', {'err' : 'Uber returned 403'});
         } else {
           var nearbyVehicles = response.body.nearbyVehicles;
           var drivers = [];
           var id = 0;
           for (var vehicle in nearbyVehicles) {
-            var paths = nearbyVehicles[vehicle]["vehiclePaths"];
+            var paths = nearbyVehicles[vehicle]['vehiclePaths'];
             var pathEntryArray = paths[Object.keys(paths).pop()];
             var lastPathEntry = pathEntryArray[pathEntryArray.length-1];
             var ride = {
-              "id" : (id++).toString(),
-              "eta" : nearbyVehicles[vehicle]["minEta"].toString(),
-              "lat" : lastPathEntry["latitude"].toString(),
-              "lng" : lastPathEntry["longitude"].toString(),
-              "name" : "Uber Driver",
-              "which" : "uber"
+              'id' : (id++).toString(),
+              'eta' : nearbyVehicles[vehicle]['minEta'].toString(),
+              'lat' : lastPathEntry['latitude'].toString(),
+              'lng' : lastPathEntry['longitude'].toString(),
+              'name' : 'Uber Driver',
+              'which' : 'uber'
             }
             drivers.push(ride);
           }
         }
-        callback("uber", drivers);
+        callback('uber', drivers);
       } catch (err) {
-        callback("uber", {'err' : err});
+        callback('uber', {'err' : err});
         console.error(err);
       }
     });
@@ -78,7 +78,7 @@ module.exports = {
 };
 
 function hashPassword(password) {
-  var pw = password.toString("utf8")
+  var pw = password.toString('utf8')
   var buffer = '';
   for (var i = 0, len = pw.length; i < len; i++) {
     buffer += crypto.createHash('md5').update(pw[i]).digest('hex');
