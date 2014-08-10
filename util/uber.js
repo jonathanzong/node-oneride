@@ -1,5 +1,4 @@
 // uber.js
-var UBER_ENDPOINT = 'https://cn-dc1.uber.com';
 
 var unirest = require('unirest');
 var crypto = require('crypto');
@@ -19,6 +18,7 @@ module.exports = {
         if (response.status === 403) {
           callback('uber', {'err' : 'Uber returned 403'});
         } else {
+          console.log(response.status);
           var token = response.body.token;
           callback('uber', {'token' : token});
         }
@@ -104,8 +104,11 @@ function sendMessage(messageType, location, params, callback) {
     json[key] = params[key];
   }
 
-  unirest.post(UBER_ENDPOINT)
+  var num = Math.floor(Math.random() * 10 + 1);
+
+  unirest.post('https://cn' + num + '.uber.com')
     .headers({
+      'Host' : 'cn' + num + '.uber.com',
       'Accept-Language': 'en-US',
       'User-Agent': 'client/iphone/2.8.17'
     })
