@@ -44,39 +44,61 @@ app.post('/login', function (req, res) {
 
 // lat, lng, lyft_token
 // lat, lng, summon_email, summon_password
+// lat, lng, uber_token, uber_ride_id
 app.post('/pickup/:which', function (req, res) {
   var which = req.params.which;
   var location = {
     lat : parseFloat(req.body.lat),
     lng : parseFloat(req.body.lng)
   };
-  if (which === 'lyft') {
-    lyft.pickup(req.body.lyft_token, location, function (which, data) {
-      res.send(data);
-    });
-  } else if (which === 'summon') {
-    summon.pickup(req.body.summon_email, req.body.summon_password, location, function (which, data) {
-      res.send(data);
-    });
+  switch (which) {
+    case 'lyft':
+      lyft.pickup(req.body.lyft_token, location, function (which, data) {
+        res.send(data);
+      });
+      break;
+    case 'summon':
+      summon.pickup(req.body.summon_email, req.body.summon_password, location, function (which, data) {
+        res.send(data);
+      });
+      break;
+    case 'uber':
+      uber.pickup(req.body.uber_token, req.body.uber_ride_id, location, function (which, data) {
+        res.send(data);
+      });
+      break;
+    default:
+      res.status(404);
   }
 });
 
 // lyft_token, ride_id, lat, lng
 // summon_email, summon_password, ride_id
+// uber_token, lat, lng
 app.post('/cancel/:which', function (req, res) {
   var which = req.params.which;
   var location = {
     lat : parseFloat(req.body.lat),
     lng : parseFloat(req.body.lng)
   };
-  if (which === 'lyft') {
-    lyft.cancel(req.body.lyft_token, req.body.ride_id, location, function (which, data) {
-      res.send(data);
-    });
-  } else if (which === 'summon') {
-    summon.cancel(req.body.summon_email, req.body.summon_password, req.body.ride_id, function (which, data) {
-      res.send(data);
-    });
+  switch (which) {
+    case 'lyft':
+      lyft.cancel(req.body.lyft_token, req.body.ride_id, location, function (which, data) {
+        res.send(data);
+      });
+      break;
+    case 'summon':
+      summon.cancel(req.body.summon_email, req.body.summon_password, req.body.ride_id, function (which, data) {
+        res.send(data);
+      });
+      break;
+    case 'uber':
+      uber.cancel(req.body.uber_token, location, function (which, data) {
+        res.send(data)
+;      });
+      break;
+    default:
+      res.status(404);
   }
 });
 
