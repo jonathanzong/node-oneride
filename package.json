@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.4.3",
-    "ejs": "^1.0.0",
+    "ejs": "^2.5.5",
     "express": "^4.6.1",
     "request": "^2.39.0",
     "unirest": "^0.2.7"
